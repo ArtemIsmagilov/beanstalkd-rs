@@ -1,0 +1,8 @@
+[package]
+name = "beanstalkd-rs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+smol = "2.0.2"
+thiserror = "2.0.18"

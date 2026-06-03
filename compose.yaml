@@ -1,0 +1,11 @@
+services:
+  bsd-tcp:
+    build: .
+    ports:
+      - "11300:11300"
+
+  bsd-unix:
+    build: .
+    command: ["-l", "unix:/tmp/beanstalkd.sock"]
+    volumes:
+      - "/tmp:/tmp"

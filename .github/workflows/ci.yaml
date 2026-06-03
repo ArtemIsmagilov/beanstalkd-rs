@@ -1,0 +1,18 @@
+name: CI
+
+on: [pull_request, push]
+
+jobs:
+  test:
+    runs-on: "ubuntu-latest"
+    name: Run tests.
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v6
+      - name: Run servers
+        run: |
+          docker compose up -d
+          bash chmod_unix.bash
+      - name: Run tests
+        run: |
+          cargo test
