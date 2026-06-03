@@ -16,3 +16,21 @@ jobs:
       - name: Run tests
         run: |
           cargo test
+
+  coverage:
+    runs-on: "ubuntu-latest"
+    name: Run tests coverage.
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v6
+      - name: Install nightly toolchain
+        uses: dtolnay/rust-toolchain@nightly
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Run servers
+        run: |
+          docker compose up -d
+          bash chmod_unix.bash
+      - name: Run tests coverage
+        run: |
+          cargo llvm-cov --doctests
