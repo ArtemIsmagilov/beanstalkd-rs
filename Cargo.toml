@@ -2,6 +2,12 @@
 name = "beanstalkd-rs"
 version = "0.1.0"
 edition = "2024"
+description = "Minimal rust beanstalkd client"
+readme = "README.md"
+repository = "https://github.com/ArtemIsmagilov/beanstalkd-rs"
+license = "MIT"
+keywords = ["beanstalkd", "client", "queue", "async"]
+categories = ["network-programming", "asynchronous"]
 
 [dependencies]
 thiserror = "2.0.18"

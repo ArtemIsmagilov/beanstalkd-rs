@@ -69,3 +69,17 @@ jobs:
           bash chmod_unix.bash
       - name: Run examples
         run: cargo run --example simple
+
+  security-scan:
+    name: Run security scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Run Opengrep scan
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/opengrep/opengrep/main/install.sh | bash
+          sh -c "/home/runner/.opengrep/cli/latest/opengrep scan \
+          --config auto \
+          --error \
+          --exclude-rule dockerfile.security.missing-user-entrypoint.missing-user-entrypoint"
