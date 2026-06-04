@@ -1253,14 +1253,21 @@ impl Connection {
     /// # Example
     ///
     /// ```
-    /// # use beanstalkd_rs::{Connection, Error};
+    /// # use beanstalkd_rs::{Connection, Error, Job};
     /// # use smol::block_on;
     /// # block_on(async {
     /// for mut c in [
     ///     Connection::default().await?,
     ///     Connection::unix_connect("/tmp/beanstalkd.sock").await?,
     /// ] {
-    ///     assert!(c.reserve_job(1).await?.is_none())
+    ///     let r = c.put(0, 0, 0, b"a").await?;
+    ///     assert_eq!(
+    ///         c.reserve_job(r.id()).await?,
+    ///         Some(Job {
+    ///             id: r.id(),
+    ///             body: b"a".to_vec()
+    ///         })
+    ///     )
     /// }
     /// # Ok::<(), Error>(())
     /// # }).unwrap();

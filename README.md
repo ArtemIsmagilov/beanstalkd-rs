@@ -11,7 +11,7 @@ The library is very flexible and easy to develop.
 
 ## Beanstalkd
 
-Beanstalkd is a simple, fast work queue on C. 
+[Beanstalkd](https://beanstalkd.github.io/) is a simple, fast work queue on C. 
 
 ## Usage
 
@@ -131,6 +131,3 @@ opengrep scan --config auto
 cargo fmt -- --config format_code_in_doc_comments=true
 ```
 
-## Links
-
-- [Beanstalkd](https://beanstalkd.github.io/)
