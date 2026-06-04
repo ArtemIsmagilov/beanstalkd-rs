@@ -42,7 +42,7 @@ match conn.reserve().await? {
 - Tcp/Unix sockets
 - Errors Beanstalkd mapping with messages
 - Has documentation
-- Coverage integration and unit tests
+- Coverage Integration and unit tests
 
 ## Supported commands
 
@@ -56,3 +56,45 @@ match conn.reserve().await? {
 | Information | `list_tubes`, `list_tube_used`, `list_tubes_watched` |
 | Statistics | `stats`, `stats_tube`, `stats_job` |
 | Connection | `quit` |
+
+## Testing
+
+```bash
+docker compose up
+bash chmod_unix.bash
+cargo test
+```
+
+## Mutation testing
+
+```bash
+cargo mutants
+```
+
+## Coverage testing
+
+```bash
+cargo llvm-cov
+```
+
+## Quality code
+
+```bash
+debtmap analyze .
+```
+
+## Security scanning
+
+```bash
+opengrep scan --config auto
+```
+
+## Formatting doc tests
+
+```
+cargo fmt -- --config format_code_in_doc_comments=true
+```
+
+## Links
+
+- [Beanstalkd](https://beanstalkd.github.io/)
