@@ -83,3 +83,12 @@ jobs:
           --config auto \
           --error \
           --exclude-rule dockerfile.security.missing-user-entrypoint.missing-user-entrypoint"
+
+  mutants:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-mutants
+      - run: cargo mutants -vV --in-place
