@@ -107,7 +107,7 @@ opengrep scan --config auto
 
 ## Formatting doc tests
 
-```
+```bash
 cargo fmt -- --config format_code_in_doc_comments=true
 ```
 
