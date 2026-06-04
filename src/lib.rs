@@ -260,7 +260,7 @@ async fn parse_tubes<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<
         return Err(err);
     }
     if buf.starts_with("OK") {
-        let bytes = buf.trim_end().strip_prefix("OK ").unwrap().parse().unwrap();
+        let bytes = buf.trim().strip_prefix("OK ").unwrap().parse().unwrap();
         let mut buf = vec![0; bytes + 2];
         s.read_exact(&mut buf).await?;
         buf.truncate(bytes);
@@ -281,7 +281,7 @@ async fn parse_tube<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<S
         return Err(err);
     }
     if buf.starts_with("USING") {
-        return Ok(buf.trim_end().strip_prefix("USING ").unwrap().to_string());
+        return Ok(buf.trim().strip_prefix("USING ").unwrap().to_string());
     }
     Err(Error::UnexpectedResponse(buf))
 }
@@ -295,7 +295,7 @@ async fn parse_stats<S: AsyncBufRead + AsyncWrite + Unpin>(
         return Err(err);
     }
     if buf.starts_with("OK") {
-        let bytes = buf.trim_end().strip_prefix("OK ").unwrap().parse().unwrap();
+        let bytes = buf.trim().strip_prefix("OK ").unwrap().parse().unwrap();
         let mut buf = vec![0; bytes + 2];
         s.read_exact(&mut buf).await?;
         buf.truncate(bytes);
@@ -322,7 +322,7 @@ async fn parse_stats_tube_or_job<S: AsyncBufRead + AsyncWrite + Unpin>(
         return Ok(None);
     }
     if buf.starts_with("OK") {
-        let bytes = buf.trim_end().strip_prefix("OK ").unwrap().parse().unwrap();
+        let bytes = buf.trim().strip_prefix("OK ").unwrap().parse().unwrap();
         let mut buf = vec![0; bytes + 2];
         s.read_exact(&mut buf).await?;
         buf.truncate(bytes);
@@ -358,12 +358,7 @@ async fn parse_kick<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<u
         return Err(err);
     }
     if buf.starts_with("KICKED") {
-        return Ok(buf
-            .trim_ascii_end()
-            .strip_prefix("KICKED ")
-            .unwrap()
-            .parse()
-            .unwrap());
+        return Ok(buf.trim().strip_prefix("KICKED ").unwrap().parse().unwrap());
     }
     Err(Error::UnexpectedResponse(buf))
 }
@@ -378,11 +373,7 @@ async fn parse_peek<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<O
         return Ok(None);
     }
     if buf.starts_with("FOUND") {
-        let mut split = buf
-            .trim_ascii_end()
-            .strip_prefix("FOUND ")
-            .unwrap()
-            .split(' ');
+        let mut split = buf.trim().strip_prefix("FOUND ").unwrap().split(' ');
         let id = split.next().unwrap().parse().unwrap();
         let bytes = split.next().unwrap().parse().unwrap();
         let mut body = vec![0; bytes + 2];
@@ -404,7 +395,7 @@ async fn parse_ignore<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result
     }
     if buf.starts_with("WATCHING") {
         return Ok(IgnoreResult::Watching(
-            buf.trim_ascii_end()
+            buf.trim()
                 .strip_prefix("WATCHING ")
                 .unwrap()
                 .parse()
@@ -422,7 +413,7 @@ async fn parse_watch<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<
     }
     if buf.starts_with("WATCHING") {
         return Ok(buf
-            .trim_ascii_end()
+            .trim()
             .strip_prefix("WATCHING ")
             .unwrap()
             .parse()
@@ -494,11 +485,7 @@ async fn parse_reserve_job<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> R
         return Ok(None);
     }
     if buf.starts_with("RESERVED") {
-        let mut split = buf
-            .trim_ascii_end()
-            .strip_prefix("RESERVED ")
-            .unwrap()
-            .split(' ');
+        let mut split = buf.trim().strip_prefix("RESERVED ").unwrap().split(' ');
         let id = split.next().unwrap().parse().unwrap();
         let bytes = split.next().unwrap().parse().unwrap();
         let mut body = vec![0; bytes + 2];
@@ -522,11 +509,7 @@ async fn parse_reserve<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Resul
         return Ok(ReserveResult::DeadlineSoon);
     }
     if buf.starts_with("RESERVED") {
-        let mut split = buf
-            .trim_ascii_end()
-            .strip_prefix("RESERVED ")
-            .unwrap()
-            .split(' ');
+        let mut split = buf.trim().strip_prefix("RESERVED ").unwrap().split(' ');
         let id = split.next().unwrap().parse().unwrap();
         let bytes = split.next().unwrap().parse().unwrap();
         let mut body = vec![0; bytes + 2];
@@ -544,11 +527,7 @@ async fn parse_use_tube<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Resu
         return Err(err);
     }
     if buf.starts_with("USING") {
-        return Ok(buf
-            .trim_ascii_end()
-            .strip_prefix("USING ")
-            .unwrap()
-            .to_string());
+        return Ok(buf.trim().strip_prefix("USING ").unwrap().to_string());
     }
     Err(Error::UnexpectedResponse(buf))
 }
@@ -561,7 +540,7 @@ async fn parse_put<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<Pu
     }
     if buf.starts_with("INSERTED") {
         return Ok(PutResult::Inserted(
-            buf.trim_ascii_end()
+            buf.trim()
                 .strip_prefix("INSERTED ")
                 .unwrap()
                 .parse()
@@ -570,11 +549,7 @@ async fn parse_put<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<Pu
     }
     if buf.starts_with("BURIED") {
         return Ok(PutResult::Buried(
-            buf.trim_ascii_end()
-                .strip_prefix("BURIED ")
-                .unwrap()
-                .parse()
-                .unwrap(),
+            buf.trim().strip_prefix("BURIED ").unwrap().parse().unwrap(),
         ));
     }
     if buf == "EXPECTED_CRLF\r\n" {
