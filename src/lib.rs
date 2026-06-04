@@ -1,3 +1,38 @@
+//! Minimal rust client for beanstalkd
+//!
+//! - Implemented all commands
+//! - Asyncronous client
+//! - Tcp and Unix connections
+//! - Typed results
+//! - Error handling
+//!
+//! # Usage
+//!
+//! ### Producer
+//!
+//! ```rust
+//! let mut conn = Connection::default().await?;
+//! let result = conn.put(0, 0, 60, b"Hello, Beanstalkd!").await?;
+//! match result {
+//!     PutResult::Inserted(id) => println!("Job inserted with ID: {}", id),
+//!     PutResult::Buried(id) => println!("Job buried with ID: {}", id),
+//! }
+//! ```
+//!
+//! ### Consumer
+//!
+//! ```rust
+//! let mut conn = Connection::default().await?;
+//! match conn.reserve().await? {
+//!     ReserveResult::Reserved(job) => {
+//!         println!("Got job {}: {:?}", job.id, job.body);
+//!         conn.delete(job.id).await?;
+//!     }
+//!     ReserveResult::TimedOut => println!("No jobs available"),
+//!     ReserveResult::DeadlineSoon => println!("Worker deadline approaching"),
+//! }
+//! ```
+
 use std::collections::HashMap;
 
 use smol::io::{self, BufReader};
