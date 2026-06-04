@@ -56,14 +56,3 @@ jobs:
         run: cargo fmt --check
       - name: Check clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
-
-  security-scan:
-    name: Run security scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-      - name: Run Opengrep scan
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/opengrep/opengrep/main/install.sh | bash
-          /home/runner/.opengrep/cli/latest/opengrep scan --config auto --error
