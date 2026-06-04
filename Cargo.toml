@@ -12,7 +12,7 @@ categories = ["network-programming", "asynchronous"]
 [dependencies]
 thiserror = "2.0.18"
 smol = { version = "2.0.2", optional = true }
-tokio = { version = "1.28.2", optional = true }
+tokio = { version = "1.52.3", optional = true }
 
 [features]
 default = ["smol-comp"]
