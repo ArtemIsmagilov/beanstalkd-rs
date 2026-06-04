@@ -1,6 +1,4 @@
 use std::collections::HashMap;
-use std::pin::Pin;
-use std::task::{Context, Poll};
 
 use smol::io::{self, BufReader};
 use smol::net::{TcpStream, unix::UnixStream};
@@ -710,59 +708,6 @@ pub enum Connection {
     Unix(BufReader<UnixStream>),
 }
 
-impl AsyncRead for Connection {
-    fn poll_read(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &mut [u8],
-    ) -> Poll<io::Result<usize>> {
-        match &mut *self {
-            Self::Tcp(s) => Pin::new(s).poll_read(cx, buf),
-            Self::Unix(s) => Pin::new(s).poll_read(cx, buf),
-        }
-    }
-}
-
-impl AsyncBufRead for Connection {
-    fn poll_fill_buf(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<&[u8]>> {
-        match Pin::into_inner(self) {
-            Self::Tcp(s) => Pin::new(s).poll_fill_buf(cx),
-            Self::Unix(s) => Pin::new(s).poll_fill_buf(cx),
-        }
-    }
-    fn consume(mut self: Pin<&mut Self>, amt: usize) {
-        match &mut *self {
-            Self::Tcp(s) => Pin::new(s).consume(amt),
-            Self::Unix(s) => Pin::new(s).consume(amt),
-        }
-    }
-}
-
-impl AsyncWrite for Connection {
-    fn poll_write(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &[u8],
-    ) -> Poll<io::Result<usize>> {
-        match &mut *self {
-            Self::Tcp(s) => Pin::new(s.get_mut()).poll_write(cx, buf),
-            Self::Unix(s) => Pin::new(s.get_mut()).poll_write(cx, buf),
-        }
-    }
-    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        match &mut *self {
-            Self::Tcp(s) => Pin::new(s.get_mut()).poll_flush(cx),
-            Self::Unix(s) => Pin::new(s.get_mut()).poll_flush(cx),
-        }
-    }
-    fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        match &mut *self {
-            Self::Tcp(s) => Pin::new(s.get_mut()).poll_close(cx),
-            Self::Unix(s) => Pin::new(s.get_mut()).poll_close(cx),
-        }
-    }
-}
-
 impl Connection {
     /// # Example
     ///
@@ -824,7 +769,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn quit(self) -> Result<()> {
-        quit_cmd(self).await
+        match self {
+            Self::Tcp(c) => quit_cmd(c).await,
+            Self::Unix(c) => quit_cmd(c).await,
+        }
     }
 
     /// # Example
@@ -843,7 +791,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn pause_tube(&mut self, tube_name: &str, delay: u32) -> Result<bool> {
-        pause_tube_cmd(self, tube_name, delay).await
+        match self {
+            Self::Tcp(c) => pause_tube_cmd(c, tube_name, delay).await,
+            Self::Unix(c) => pause_tube_cmd(c, tube_name, delay).await,
+        }
     }
 
     /// # Example
@@ -862,7 +813,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn list_tubes_watched(&mut self) -> Result<Vec<String>> {
-        list_tubes_watched_cmd(self).await
+        match self {
+            Self::Tcp(c) => list_tubes_watched_cmd(c).await,
+            Self::Unix(c) => list_tubes_watched_cmd(c).await,
+        }
     }
 
     /// # Example
@@ -881,7 +835,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn list_tube_used(&mut self) -> Result<String> {
-        list_tube_used_cmd(self).await
+        match self {
+            Self::Tcp(c) => list_tube_used_cmd(c).await,
+            Self::Unix(c) => list_tube_used_cmd(c).await,
+        }
     }
 
     /// # Example
@@ -900,7 +857,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn list_tubes(&mut self) -> Result<Vec<String>> {
-        list_tubes_cmd(self).await
+        match self {
+            Self::Tcp(c) => list_tubes_cmd(c).await,
+            Self::Unix(c) => list_tubes_cmd(c).await,
+        }
     }
 
     /// # Example
@@ -919,7 +879,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn stats(&mut self) -> Result<HashMap<String, String>> {
-        stats_cmd(self).await
+        match self {
+            Self::Tcp(c) => stats_cmd(c).await,
+            Self::Unix(c) => stats_cmd(c).await,
+        }
     }
 
     /// # Example
@@ -941,7 +904,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn stats_tube(&mut self, tube: &str) -> Result<Option<HashMap<String, String>>> {
-        stats_tube_cmd(self, tube).await
+        match self {
+            Self::Tcp(c) => stats_tube_cmd(c, tube).await,
+            Self::Unix(c) => stats_tube_cmd(c, tube).await,
+        }
     }
 
     /// # Example
@@ -964,7 +930,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn stats_job(&mut self, id: u64) -> Result<Option<HashMap<String, String>>> {
-        stats_job_cmd(self, id).await
+        match self {
+            Self::Tcp(c) => stats_job_cmd(c, id).await,
+            Self::Unix(c) => stats_job_cmd(c, id).await,
+        }
     }
 
     /// # Example
@@ -984,7 +953,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn kick_job(&mut self, id: u64) -> Result<bool> {
-        kick_job_cmd(self, id).await
+        match self {
+            Self::Tcp(c) => kick_job_cmd(c, id).await,
+            Self::Unix(c) => kick_job_cmd(c, id).await,
+        }
     }
 
     /// # Example
@@ -1004,7 +976,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn kick(&mut self, bound: u32) -> Result<u64> {
-        kick_cmd(self, bound).await
+        match self {
+            Self::Tcp(c) => kick_cmd(c, bound).await,
+            Self::Unix(c) => kick_cmd(c, bound).await,
+        }
     }
 
     /// # Example
@@ -1030,7 +1005,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn peek(&mut self, id: u64) -> Result<Option<Job>> {
-        peek_cmd(self, id).await
+        match self {
+            Self::Tcp(c) => peek_cmd(c, id).await,
+            Self::Unix(c) => peek_cmd(c, id).await,
+        }
     }
 
     /// # Example
@@ -1049,7 +1027,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn peek_ready(&mut self) -> Result<Option<Job>> {
-        peek_ready_cmd(self).await
+        match self {
+            Self::Tcp(c) => peek_ready_cmd(c).await,
+            Self::Unix(c) => peek_ready_cmd(c).await,
+        }
     }
 
     /// # Example
@@ -1068,7 +1049,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn peek_delayed(&mut self) -> Result<Option<Job>> {
-        peek_delayed_cmd(self).await
+        match self {
+            Self::Tcp(c) => peek_delayed_cmd(c).await,
+            Self::Unix(c) => peek_delayed_cmd(c).await,
+        }
     }
 
     /// # Example
@@ -1087,7 +1071,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn peek_buried(&mut self) -> Result<Option<Job>> {
-        peek_buried_cmd(self).await
+        match self {
+            Self::Tcp(c) => peek_buried_cmd(c).await,
+            Self::Unix(c) => peek_buried_cmd(c).await,
+        }
     }
 
     /// # Example
@@ -1106,7 +1093,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn ignore(&mut self, tube: &str) -> Result<IgnoreResult> {
-        ignore_cmd(self, tube).await
+        match self {
+            Self::Tcp(c) => ignore_cmd(c, tube).await,
+            Self::Unix(c) => ignore_cmd(c, tube).await,
+        }
     }
 
     /// # Example
@@ -1125,7 +1115,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn watch(&mut self, tube: &str) -> Result<u64> {
-        watch_cmd(self, tube).await
+        match self {
+            Self::Tcp(c) => watch_cmd(c, tube).await,
+            Self::Unix(c) => watch_cmd(c, tube).await,
+        }
     }
 
     /// # Example
@@ -1144,7 +1137,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn touch(&mut self, id: u64) -> Result<bool> {
-        touch_cmd(self, id).await
+        match self {
+            Self::Tcp(c) => touch_cmd(c, id).await,
+            Self::Unix(c) => touch_cmd(c, id).await,
+        }
     }
 
     /// # Example
@@ -1163,7 +1159,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn bury(&mut self, id: u64, pri: u32) -> Result<bool> {
-        bury_cmd(self, id, pri).await
+        match self {
+            Self::Tcp(c) => bury_cmd(c, id, pri).await,
+            Self::Unix(c) => bury_cmd(c, id, pri).await,
+        }
     }
 
     /// # Example
@@ -1182,7 +1181,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn release(&mut self, id: u64, pri: u32, delay: u32) -> Result<ReleaseResult> {
-        release_cmd(self, id, pri, delay).await
+        match self {
+            Self::Tcp(c) => release_cmd(c, id, pri, delay).await,
+            Self::Unix(c) => release_cmd(c, id, pri, delay).await,
+        }
     }
 
     /// # Example
@@ -1202,7 +1204,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn delete(&mut self, id: u64) -> Result<bool> {
-        delete_cmd(self, id).await
+        match self {
+            Self::Tcp(c) => delete_cmd(c, id).await,
+            Self::Unix(c) => delete_cmd(c, id).await,
+        }
     }
 
     /// # Example
@@ -1221,7 +1226,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn reserve_job(&mut self, id: u64) -> Result<Option<Job>> {
-        reserve_job_cmd(self, id).await
+        match self {
+            Self::Tcp(c) => reserve_job_cmd(c, id).await,
+            Self::Unix(c) => reserve_job_cmd(c, id).await,
+        }
     }
 
     /// # Example
@@ -1240,7 +1248,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn reserve_with_timeout(&mut self, seconds: u32) -> Result<ReserveResult> {
-        reserve_with_timeout_cmd(self, seconds).await
+        match self {
+            Self::Tcp(c) => reserve_with_timeout_cmd(c, seconds).await,
+            Self::Unix(c) => reserve_with_timeout_cmd(c, seconds).await,
+        }
     }
 
     /// # Example
@@ -1259,7 +1270,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn reserve(&mut self) -> Result<ReserveResult> {
-        reserve_cmd(self).await
+        match self {
+            Self::Tcp(c) => reserve_cmd(c).await,
+            Self::Unix(c) => reserve_cmd(c).await,
+        }
     }
 
     /// # Example
@@ -1278,7 +1292,10 @@ impl Connection {
     /// # }).unwrap();
     /// ```
     pub async fn use_tube(&mut self, tube: &str) -> Result<String> {
-        use_tube_cmd(self, tube).await
+        match self {
+            Self::Tcp(c) => use_tube_cmd(c, tube).await,
+            Self::Unix(c) => use_tube_cmd(c, tube).await,
+        }
     }
 
     /// # Example
@@ -1303,7 +1320,10 @@ impl Connection {
         ttr: u32,
         data: impl AsRef<[u8]>,
     ) -> Result<PutResult> {
-        put_cmd(self, pri, delay, ttr, data.as_ref()).await
+        match self {
+            Self::Tcp(c) => put_cmd(c, pri, delay, ttr, data.as_ref()).await,
+            Self::Unix(c) => put_cmd(c, pri, delay, ttr, data.as_ref()).await,
+        }
     }
 }
 

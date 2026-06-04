@@ -56,3 +56,16 @@ jobs:
         run: cargo fmt --check
       - name: Check clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
+
+  examples:
+    name: Run examples
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v6
+      - name: Run servers
+        run: |
+          docker compose up -d
+          bash chmod_unix.bash
+      - name: Run examples
+        run: cargo run --example simple
