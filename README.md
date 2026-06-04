@@ -1,7 +1,7 @@
 # Minimal Beanstalkd client on Rust
 [![CI](https://github.com/ArtemIsmagilov/beanstalkd-rs/actions/workflows/ci.yaml/badge.svg)](https://github.com/ArtemIsmagilov/beanstalkd-rs/actions/workflows/ci.yaml)
-[![Crates.io](https://img.shields.io/crates/v/beanstalkd-rs.svg)](https://crates.io/crates/beanstalkd-rs)
-[![Docs.rs](https://docs.rs/beanstalkd-rs/badge.svg)](https://docs.rs/beanstalkd-rs)
+[![crates.io](https://img.shields.io/crates/v/beanstalkd-rs.svg)](https://crates.io/crates/beanstalkd-rs)
+[![docs.rs](https://img.shields.io/docsrs/beanstalkd-rs)](https://docs.rs/beanstalkd-rs)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ## Beanstalkd
 
