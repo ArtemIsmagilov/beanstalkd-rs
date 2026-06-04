@@ -3,6 +3,12 @@
 [![crates.io](https://img.shields.io/crates/v/beanstalkd-rs.svg)](https://crates.io/crates/beanstalkd-rs)
 [![docs.rs](https://img.shields.io/docsrs/beanstalkd-rs)](https://docs.rs/beanstalkd-rs)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+This crate is designed for client-side interaction with the
+Beanstalkd server. You can create producers or consumers.
+Responses are typed, and you can see the status of operations.
+The library is very flexible and easy to develop.
+
 ## Beanstalkd
 
 Beanstalkd is a simple, fast work queue on C. 

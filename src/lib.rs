@@ -1,10 +1,9 @@
 //! Minimal rust client for beanstalkd
 //!
-//! - Implemented all commands
-//! - Asyncronous client
-//! - Tcp and Unix connections
-//! - Typed results
-//! - Error handling
+//! This crate is designed for client-side interaction with the
+//! Beanstalkd server. You can create producers or consumers.
+//! Responses are typed, and you can see the status of operations.
+//! The library is very flexible and easy to develop.
 //!
 //! # Usage
 //!
@@ -51,9 +50,24 @@
 
 use std::collections::HashMap;
 
-use smol::io::{self, BufReader};
-use smol::net::{TcpStream, unix::UnixStream};
-use smol::prelude::*;
+#[cfg(all(feature = "smol-comp", feature = "tokio-comp"))]
+compile_error!(
+    "feature \"smol-comp\" and feature \"tokio-comp\" cannot be enabled at the same time"
+);
+#[cfg(feature = "smol-comp")]
+mod rt {
+    pub use smol::io::{self, BufReader};
+    pub use smol::net::{TcpStream, unix::UnixStream};
+    pub use smol::prelude::*;
+}
+#[cfg(feature = "tokio-comp")]
+mod rt {
+    pub use tokio::io::{
+        self, AsyncBufRead, AsyncBufReadExt, AsyncReadExt, AsyncWrite, AsyncWriteExt, BufReader,
+    };
+    pub use tokio::net::{TcpStream, UnixStream};
+}
+use rt::*;
 
 #[derive(Debug, PartialEq)]
 pub struct Job {

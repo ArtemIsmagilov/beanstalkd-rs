@@ -11,7 +11,18 @@ categories = ["network-programming", "asynchronous"]
 
 [dependencies]
 thiserror = "2.0.18"
-smol = "2.0.2"
+smol = { version = "2.0.2", optional = true }
+tokio = { version = "1.28.2", optional = true }
+
+[features]
+default = ["smol-comp"]
+smol-comp = ["dep:smol"]
+tokio-comp = ["dep:tokio", "tokio/net", "tokio/io-util"]
 
 [[example]]
-name = "simple"
+name = "simple-smol"
+required-features = ["smol-comp"]
+
+[[example]]
+name = "simple-tokio"
+required-features = ["tokio-comp"]

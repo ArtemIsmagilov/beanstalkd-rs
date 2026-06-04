@@ -68,7 +68,9 @@ jobs:
           docker compose up -d
           bash chmod_unix.bash
       - name: Run examples
-        run: cargo run --example simple
+        run: |
+          cargo run --example simple-smol
+          cargo run --example simple-tokio --no-default-features --features tokio-comp
 
   security-scan:
     name: Run security scan
