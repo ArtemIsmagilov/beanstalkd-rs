@@ -10,7 +10,7 @@
 //!
 //! ### Producer
 //!
-//! ```rust
+//! ```rust,no_run
 //! let mut conn = Connection::default().await?;
 //! let result = conn.put(0, 0, 60, b"Hello, Beanstalkd!").await?;
 //! match result {
@@ -21,7 +21,7 @@
 //!
 //! ### Consumer
 //!
-//! ```rust
+//! ```rust,no_run
 //! let mut conn = Connection::default().await?;
 //! match conn.reserve().await? {
 //!     ReserveResult::Reserved(job) => {
