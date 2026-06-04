@@ -87,8 +87,14 @@ jobs:
   mutants:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: taiki-e/install-action@v2
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Install cargo-mutants
+        uses: taiki-e/install-action@v2
         with:
           tool: cargo-mutants
+      - name: Run servers
+        run: |
+          docker compose up -d
+          bash chmod_unix.bash
       - run: cargo mutants -vV --in-place
