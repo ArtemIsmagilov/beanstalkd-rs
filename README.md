@@ -15,6 +15,20 @@ Beanstalkd is a simple, fast work queue on C.
 
 ## Usage
 
+### Installation
+
+- smol
+
+```toml
+beanstalkd-rs = "0.2.0"
+```
+
+- tokio
+
+```toml
+beanstalkd-rs = { version = "0.2.0", default-features = false, features = ["tokio-comp"] }
+```
+
 ### Producer
 
 ```rust

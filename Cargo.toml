@@ -20,9 +20,5 @@ smol-comp = ["dep:smol"]
 tokio-comp = ["dep:tokio", "tokio/net", "tokio/io-util"]
 
 [[example]]
-name = "simple-smol"
+name = "simple"
 required-features = ["smol-comp"]
-
-[[example]]
-name = "simple-tokio"
-required-features = ["tokio-comp"]
