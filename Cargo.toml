@@ -6,15 +6,7 @@ description = "Minimal rust beanstalkd client"
 readme = "README.md"
 repository = "https://github.com/ArtemIsmagilov/beanstalkd-rs"
 license = "MIT"
-keywords = [
-  "beanstalkd",
-  "client",
-  "queue",
-  "async",
-  "consumer",
-  "producer",
-  "worker",
-]
+keywords = ["beanstalkd", "queue", "consumer", "producer", "worker"]
 categories = ["network-programming", "asynchronous"]
 
 [dependencies]
