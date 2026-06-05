@@ -141,13 +141,13 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-fn check_global_error(line: &str) -> Option<Error> {
+fn check_global_error(line: &str) -> Result<()> {
     match line {
-        "OUT_OF_MEMORY\r\n" => Some(Error::OutOfMemory),
-        "INTERNAL_ERROR\r\n" => Some(Error::InternalError),
-        "BAD_FORMAT\r\n" => Some(Error::BadFormat),
-        "UNKNOWN_COMMAND\r\n" => Some(Error::UnknownCommand),
-        _ => None,
+        "OUT_OF_MEMORY\r\n" => Err(Error::OutOfMemory),
+        "INTERNAL_ERROR\r\n" => Err(Error::InternalError),
+        "BAD_FORMAT\r\n" => Err(Error::BadFormat),
+        "UNKNOWN_COMMAND\r\n" => Err(Error::UnknownCommand),
+        _ => Ok(()),
     }
 }
 
@@ -257,9 +257,7 @@ fn build_put(pri: u32, delay: u32, ttr: u32, data: &[u8]) -> Vec<u8> {
 async fn parse_pause_tube<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<bool> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     match buf.as_str() {
         "PAUSED\r\n" => Ok(true),
         "NOT_FOUND\r\n" => Ok(false),
@@ -270,9 +268,7 @@ async fn parse_pause_tube<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Re
 async fn parse_tubes<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<Vec<String>> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     if buf.starts_with("OK") {
         let bytes = buf.trim().strip_prefix("OK ").unwrap().parse().unwrap();
         let mut buf = vec![0; bytes + 2];
@@ -291,9 +287,7 @@ async fn parse_tubes<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<
 async fn parse_tube<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<String> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     if buf.starts_with("USING") {
         return Ok(buf.trim().strip_prefix("USING ").unwrap().to_string());
     }
@@ -305,9 +299,7 @@ async fn parse_stats<S: AsyncBufRead + AsyncWrite + Unpin>(
 ) -> Result<HashMap<String, String>> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     if buf.starts_with("OK") {
         let bytes = buf.trim().strip_prefix("OK ").unwrap().parse().unwrap();
         let mut buf = vec![0; bytes + 2];
@@ -329,9 +321,7 @@ async fn parse_stats_tube_or_job<S: AsyncBufRead + AsyncWrite + Unpin>(
 ) -> Result<Option<HashMap<String, String>>> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     if buf == "NOT_FOUND\r\n" {
         return Ok(None);
     }
@@ -355,9 +345,7 @@ async fn parse_stats_tube_or_job<S: AsyncBufRead + AsyncWrite + Unpin>(
 async fn parse_kick_job<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<bool> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     match buf.as_str() {
         "KICKED\r\n" => Ok(true),
         "NOT_FOUND\r\n" => Ok(false),
@@ -368,9 +356,7 @@ async fn parse_kick_job<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Resu
 async fn parse_kick<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<u64> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     if buf.starts_with("KICKED") {
         return Ok(buf.trim().strip_prefix("KICKED ").unwrap().parse().unwrap());
     }
@@ -380,9 +366,7 @@ async fn parse_kick<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<u
 async fn parse_peek<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<Option<Job>> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     if buf == "NOT_FOUND\r\n" {
         return Ok(None);
     }
@@ -401,9 +385,7 @@ async fn parse_peek<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<O
 async fn parse_ignore<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<IgnoreResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     if buf == "NOT_IGNORED\r\n" {
         return Ok(IgnoreResult::NotIgnored);
     }
@@ -422,9 +404,7 @@ async fn parse_ignore<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result
 async fn parse_watch<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<u64> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     if buf.starts_with("WATCHING") {
         return Ok(buf
             .trim()
@@ -439,9 +419,7 @@ async fn parse_watch<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<
 async fn parse_touch<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<bool> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     match buf.as_str() {
         "TOUCHED\r\n" => Ok(true),
         "NOT_FOUND\r\n" => Ok(false),
@@ -452,9 +430,7 @@ async fn parse_touch<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<
 async fn parse_bury<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<bool> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     match buf.as_str() {
         "BURIED\r\n" => Ok(true),
         "NOT_FOUND\r\n" => Ok(false),
@@ -465,9 +441,7 @@ async fn parse_bury<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<b
 async fn parse_release<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<ReleaseResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     match buf.as_str() {
         "RELEASED\r\n" => Ok(ReleaseResult::Released),
         "BURIED\r\n" => Ok(ReleaseResult::Buried),
@@ -479,9 +453,7 @@ async fn parse_release<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Resul
 async fn parse_delete<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<bool> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     match buf.as_str() {
         "DELETED\r\n" => Ok(true),
         "NOT_FOUND\r\n" => Ok(false),
@@ -492,9 +464,7 @@ async fn parse_delete<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result
 async fn parse_reserve_job<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<Option<Job>> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     if buf == "NOT_FOUND\r\n" {
         return Ok(None);
     }
@@ -513,9 +483,7 @@ async fn parse_reserve_job<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> R
 async fn parse_reserve<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<ReserveResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     if buf == "TIMED_OUT\r\n" {
         return Ok(ReserveResult::TimedOut);
     }
@@ -537,9 +505,7 @@ async fn parse_reserve<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Resul
 async fn parse_use_tube<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<String> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     if buf.starts_with("USING") {
         return Ok(buf.trim().strip_prefix("USING ").unwrap().to_string());
     }
@@ -549,9 +515,7 @@ async fn parse_use_tube<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Resu
 async fn parse_put<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<PutResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
-    if let Some(err) = check_global_error(&buf) {
-        return Err(err);
-    }
+    check_global_error(&buf)?;
     if buf.starts_with("INSERTED") {
         return Ok(PutResult::Inserted(
             buf.trim()
