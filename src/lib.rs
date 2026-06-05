@@ -109,6 +109,36 @@ impl PutResult {
     }
 }
 
+#[derive(Debug, PartialEq)]
+pub enum PauseTubeResult {
+    Paused,
+    NotFound,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum KickJobResult {
+    Kicked,
+    NotFound,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum TouchResult {
+    Touched,
+    NotFound,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum BuryResult {
+    Buried,
+    NotFound,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum DeleteResult {
+    Deleted,
+    NotFound,
+}
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Network I/O error: {0}")]
@@ -254,18 +284,18 @@ fn build_put(pri: u32, delay: u32, ttr: u32, data: &[u8]) -> Vec<u8> {
     w
 }
 
-async fn parse_pause_tube<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<bool> {
+async fn parse_pause_tube<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<PauseTubeResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
     match buf.as_str() {
-        "PAUSED\r\n" => Ok(true),
-        "NOT_FOUND\r\n" => Ok(false),
+        "PAUSED\r\n" => Ok(PauseTubeResult::Paused),
+        "NOT_FOUND\r\n" => Ok(PauseTubeResult::NotFound),
         _ => Err(Error::UnexpectedResponse(buf)),
     }
 }
 
-async fn parse_tubes<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<Vec<String>> {
+async fn parse_tubes<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<Vec<String>> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
@@ -284,7 +314,7 @@ async fn parse_tubes<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<
     Err(Error::UnexpectedResponse(buf))
 }
 
-async fn parse_tube<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<String> {
+async fn parse_tube<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<String> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
@@ -294,9 +324,7 @@ async fn parse_tube<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<S
     Err(Error::UnexpectedResponse(buf))
 }
 
-async fn parse_stats<S: AsyncBufRead + AsyncWrite + Unpin>(
-    s: &mut S,
-) -> Result<HashMap<String, String>> {
+async fn parse_stats<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<HashMap<String, String>> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
@@ -316,7 +344,7 @@ async fn parse_stats<S: AsyncBufRead + AsyncWrite + Unpin>(
     Err(Error::UnexpectedResponse(buf))
 }
 
-async fn parse_stats_tube_or_job<S: AsyncBufRead + AsyncWrite + Unpin>(
+async fn parse_stats_tube_or_job<S: AsyncBufRead + Unpin>(
     s: &mut S,
 ) -> Result<Option<HashMap<String, String>>> {
     let mut buf = String::new();
@@ -342,18 +370,18 @@ async fn parse_stats_tube_or_job<S: AsyncBufRead + AsyncWrite + Unpin>(
     Err(Error::UnexpectedResponse(buf))
 }
 
-async fn parse_kick_job<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<bool> {
+async fn parse_kick_job<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<KickJobResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
     match buf.as_str() {
-        "KICKED\r\n" => Ok(true),
-        "NOT_FOUND\r\n" => Ok(false),
+        "KICKED\r\n" => Ok(KickJobResult::Kicked),
+        "NOT_FOUND\r\n" => Ok(KickJobResult::NotFound),
         _ => Err(Error::UnexpectedResponse(buf)),
     }
 }
 
-async fn parse_kick<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<u64> {
+async fn parse_kick<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<u64> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
@@ -363,7 +391,7 @@ async fn parse_kick<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<u
     Err(Error::UnexpectedResponse(buf))
 }
 
-async fn parse_peek<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<Option<Job>> {
+async fn parse_peek<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<Option<Job>> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
@@ -382,7 +410,7 @@ async fn parse_peek<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<O
     Err(Error::UnexpectedResponse(buf))
 }
 
-async fn parse_ignore<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<IgnoreResult> {
+async fn parse_ignore<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<IgnoreResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
@@ -401,7 +429,7 @@ async fn parse_ignore<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result
     Err(Error::UnexpectedResponse(buf))
 }
 
-async fn parse_watch<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<u64> {
+async fn parse_watch<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<u64> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
@@ -416,29 +444,29 @@ async fn parse_watch<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<
     Err(Error::UnexpectedResponse(buf))
 }
 
-async fn parse_touch<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<bool> {
+async fn parse_touch<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<TouchResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
     match buf.as_str() {
-        "TOUCHED\r\n" => Ok(true),
-        "NOT_FOUND\r\n" => Ok(false),
+        "TOUCHED\r\n" => Ok(TouchResult::Touched),
+        "NOT_FOUND\r\n" => Ok(TouchResult::NotFound),
         _ => Err(Error::UnexpectedResponse(buf)),
     }
 }
 
-async fn parse_bury<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<bool> {
+async fn parse_bury<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<BuryResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
     match buf.as_str() {
-        "BURIED\r\n" => Ok(true),
-        "NOT_FOUND\r\n" => Ok(false),
+        "BURIED\r\n" => Ok(BuryResult::Buried),
+        "NOT_FOUND\r\n" => Ok(BuryResult::NotFound),
         _ => Err(Error::UnexpectedResponse(buf)),
     }
 }
 
-async fn parse_release<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<ReleaseResult> {
+async fn parse_release<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<ReleaseResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
@@ -450,18 +478,18 @@ async fn parse_release<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Resul
     }
 }
 
-async fn parse_delete<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<bool> {
+async fn parse_delete<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<DeleteResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
     match buf.as_str() {
-        "DELETED\r\n" => Ok(true),
-        "NOT_FOUND\r\n" => Ok(false),
+        "DELETED\r\n" => Ok(DeleteResult::Deleted),
+        "NOT_FOUND\r\n" => Ok(DeleteResult::NotFound),
         _ => Err(Error::UnexpectedResponse(buf)),
     }
 }
 
-async fn parse_reserve_job<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<Option<Job>> {
+async fn parse_reserve_job<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<Option<Job>> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
@@ -480,7 +508,7 @@ async fn parse_reserve_job<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> R
     Err(Error::UnexpectedResponse(buf))
 }
 
-async fn parse_reserve<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<ReserveResult> {
+async fn parse_reserve<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<ReserveResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
@@ -502,7 +530,7 @@ async fn parse_reserve<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Resul
     Err(Error::UnexpectedResponse(buf))
 }
 
-async fn parse_use_tube<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<String> {
+async fn parse_use_tube<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<String> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
@@ -512,7 +540,7 @@ async fn parse_use_tube<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Resu
     Err(Error::UnexpectedResponse(buf))
 }
 
-async fn parse_put<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<PutResult> {
+async fn parse_put<S: AsyncBufRead + Unpin>(s: &mut S) -> Result<PutResult> {
     let mut buf = String::new();
     s.read_line(&mut buf).await?;
     check_global_error(&buf)?;
@@ -542,7 +570,7 @@ async fn parse_put<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S) -> Result<Pu
     Err(Error::UnexpectedResponse(buf))
 }
 
-async fn quit_cmd<S: AsyncBufRead + AsyncWrite + Unpin>(mut s: S) -> Result<()> {
+async fn quit_cmd<S: AsyncWrite + Unpin>(mut s: S) -> Result<()> {
     Ok(s.write_all(build_quit()).await?)
 }
 
@@ -550,7 +578,7 @@ async fn pause_tube_cmd<S: AsyncBufRead + AsyncWrite + Unpin>(
     s: &mut S,
     tube_name: &str,
     delay: u32,
-) -> Result<bool> {
+) -> Result<PauseTubeResult> {
     s.write_all(&build_pause_tube(tube_name, delay)).await?;
     parse_pause_tube(s).await
 }
@@ -595,7 +623,10 @@ async fn stats_job_cmd<S: AsyncBufRead + AsyncWrite + Unpin>(
     parse_stats_tube_or_job(s).await
 }
 
-async fn kick_job_cmd<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S, id: u64) -> Result<bool> {
+async fn kick_job_cmd<S: AsyncBufRead + AsyncWrite + Unpin>(
+    s: &mut S,
+    id: u64,
+) -> Result<KickJobResult> {
     s.write_all(&build_kick_job(id)).await?;
     parse_kick_job(s).await
 }
@@ -638,7 +669,10 @@ async fn watch_cmd<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S, tube: &str) 
     parse_watch(s).await
 }
 
-async fn touch_cmd<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S, id: u64) -> Result<bool> {
+async fn touch_cmd<S: AsyncBufRead + AsyncWrite + Unpin>(
+    s: &mut S,
+    id: u64,
+) -> Result<TouchResult> {
     s.write_all(&build_touch(id)).await?;
     parse_touch(s).await
 }
@@ -647,7 +681,7 @@ async fn bury_cmd<S: AsyncBufRead + AsyncWrite + Unpin>(
     s: &mut S,
     id: u64,
     pri: u32,
-) -> Result<bool> {
+) -> Result<BuryResult> {
     s.write_all(&build_bury(id, pri)).await?;
     parse_bury(s).await
 }
@@ -662,7 +696,10 @@ async fn release_cmd<S: AsyncBufRead + AsyncWrite + Unpin>(
     parse_release(s).await
 }
 
-async fn delete_cmd<S: AsyncBufRead + AsyncWrite + Unpin>(s: &mut S, id: u64) -> Result<bool> {
+async fn delete_cmd<S: AsyncBufRead + AsyncWrite + Unpin>(
+    s: &mut S,
+    id: u64,
+) -> Result<DeleteResult> {
     s.write_all(&build_delete(id)).await?;
     parse_delete(s).await
 }
@@ -782,19 +819,19 @@ impl Connection {
     /// # Example
     ///
     /// ```
-    /// # use beanstalkd_rs::{Connection, Error};
+    /// # use beanstalkd_rs::{Connection, Error, PauseTubeResult};
     /// # use smol::block_on;
     /// # block_on(async {
     /// for mut c in [
     ///     Connection::default().await?,
     ///     Connection::unix_connect("/tmp/beanstalkd.sock").await?,
     /// ] {
-    ///     assert!(c.pause_tube("default", 0).await?)
+    ///     assert_eq!(c.pause_tube("default", 0).await?, PauseTubeResult::Paused);
     /// }
     /// # Ok::<(), Error>(())
     /// # }).unwrap();
     /// ```
-    pub async fn pause_tube(&mut self, tube_name: &str, delay: u32) -> Result<bool> {
+    pub async fn pause_tube(&mut self, tube_name: &str, delay: u32) -> Result<PauseTubeResult> {
         match self {
             Self::Tcp(c) => pause_tube_cmd(c, tube_name, delay).await,
             Self::Unix(c) => pause_tube_cmd(c, tube_name, delay).await,
@@ -943,20 +980,19 @@ impl Connection {
     /// # Example
     ///
     /// ```
-    /// # use beanstalkd_rs::{Connection, Error};
+    /// # use beanstalkd_rs::{Connection, Error, KickJobResult};
     /// # use smol::block_on;
     /// # block_on(async {
     /// for mut c in [
     ///     Connection::default().await?,
     ///     Connection::unix_connect("/tmp/beanstalkd.sock").await?,
     /// ] {
-    ///     let r = c.put(0, 0, 0, b"a").await?;
-    ///     assert!(!c.kick_job(r.id()).await?);
+    ///     assert_eq!(c.kick_job(1).await?, KickJobResult::NotFound);
     /// }
     /// # Ok::<(), Error>(())
     /// # }).unwrap();
     /// ```
-    pub async fn kick_job(&mut self, id: u64) -> Result<bool> {
+    pub async fn kick_job(&mut self, id: u64) -> Result<KickJobResult> {
         match self {
             Self::Tcp(c) => kick_job_cmd(c, id).await,
             Self::Unix(c) => kick_job_cmd(c, id).await,
@@ -1128,19 +1164,19 @@ impl Connection {
     /// # Example
     ///
     /// ```
-    /// # use beanstalkd_rs::{Connection, Error};
+    /// # use beanstalkd_rs::{Connection, Error, TouchResult};
     /// # use smol::block_on;
     /// # block_on(async {
     /// for mut c in [
     ///     Connection::default().await?,
     ///     Connection::unix_connect("/tmp/beanstalkd.sock").await?,
     /// ] {
-    ///     assert!(!c.touch(1).await?);
+    ///     assert_eq!(c.touch(1).await?, TouchResult::NotFound);
     /// }
     /// # Ok::<(), Error>(())
     /// # }).unwrap();
     /// ```
-    pub async fn touch(&mut self, id: u64) -> Result<bool> {
+    pub async fn touch(&mut self, id: u64) -> Result<TouchResult> {
         match self {
             Self::Tcp(c) => touch_cmd(c, id).await,
             Self::Unix(c) => touch_cmd(c, id).await,
@@ -1150,19 +1186,19 @@ impl Connection {
     /// # Example
     ///
     /// ```
-    /// # use beanstalkd_rs::{Connection, Error};
+    /// # use beanstalkd_rs::{Connection, Error, BuryResult};
     /// # use smol::block_on;
     /// # block_on(async {
     /// for mut c in [
     ///     Connection::default().await?,
     ///     Connection::unix_connect("/tmp/beanstalkd.sock").await?,
     /// ] {
-    ///     assert!(!c.bury(1, 0).await?);
+    ///     assert_eq!(c.bury(1, 0).await?, BuryResult::NotFound);
     /// }
     /// # Ok::<(), Error>(())
     /// # }).unwrap();
     /// ```
-    pub async fn bury(&mut self, id: u64, pri: u32) -> Result<bool> {
+    pub async fn bury(&mut self, id: u64, pri: u32) -> Result<BuryResult> {
         match self {
             Self::Tcp(c) => bury_cmd(c, id, pri).await,
             Self::Unix(c) => bury_cmd(c, id, pri).await,
@@ -1194,7 +1230,7 @@ impl Connection {
     /// # Example
     ///
     /// ```
-    /// # use beanstalkd_rs::{Connection, Error};
+    /// # use beanstalkd_rs::{Connection, Error, DeleteResult};
     /// # use smol::block_on;
     /// # block_on(async {
     /// for mut c in [
@@ -1202,12 +1238,12 @@ impl Connection {
     ///     Connection::unix_connect("/tmp/beanstalkd.sock").await?,
     /// ] {
     ///     let r = c.put(0, 0, 0, b"a").await?;
-    ///     assert!(c.delete(r.id()).await?)
+    ///     assert_eq!(c.delete(r.id()).await?, DeleteResult::Deleted);
     /// }
     /// # Ok::<(), Error>(())
     /// # }).unwrap();
     /// ```
-    pub async fn delete(&mut self, id: u64) -> Result<bool> {
+    pub async fn delete(&mut self, id: u64) -> Result<DeleteResult> {
         match self {
             Self::Tcp(c) => delete_cmd(c, id).await,
             Self::Unix(c) => delete_cmd(c, id).await,
@@ -1356,10 +1392,16 @@ mod tests {
     fn test_pause_tube() {
         block_on(async {
             let mut c = Cursor::new(b"pause-tube default 5\r\nPAUSED\r\n".to_vec());
-            assert!(pause_tube_cmd(&mut c, "default", 5).await.unwrap());
+            assert_eq!(
+                pause_tube_cmd(&mut c, "default", 5).await.unwrap(),
+                PauseTubeResult::Paused
+            );
 
             let mut c = Cursor::new(b"pause-tube default 5\r\nNOT_FOUND\r\n".to_vec());
-            assert!(!pause_tube_cmd(&mut c, "default", 5).await.unwrap());
+            assert_eq!(
+                pause_tube_cmd(&mut c, "default", 5).await.unwrap(),
+                PauseTubeResult::NotFound
+            );
 
             let mut c = Cursor::new(b"pause-tube default 5\r\nERROR\r\n".to_vec());
             assert!(pause_tube_cmd(&mut c, "default", 5).await.is_err());
@@ -1488,10 +1530,16 @@ mod tests {
     fn test_kick_job() {
         block_on(async {
             let mut c = Cursor::new(b"kick-job 1\r\nKICKED\r\n".to_vec());
-            assert!(kick_job_cmd(&mut c, 1).await.unwrap());
+            assert_eq!(
+                kick_job_cmd(&mut c, 1).await.unwrap(),
+                KickJobResult::Kicked
+            );
 
             let mut c = Cursor::new(b"kick-job 1\r\nNOT_FOUND\r\n".to_vec());
-            assert!(!kick_job_cmd(&mut c, 1).await.unwrap());
+            assert_eq!(
+                kick_job_cmd(&mut c, 1).await.unwrap(),
+                KickJobResult::NotFound
+            );
 
             let mut c = Cursor::new(b"kick-job 1\r\nERROR\r\n".to_vec());
             assert!(kick_job_cmd(&mut c, 1).await.is_err());
@@ -1648,10 +1696,10 @@ mod tests {
     fn test_touch() {
         block_on(async {
             let mut c = Cursor::new(b"touch 1\r\nTOUCHED\r\n".to_vec());
-            assert!(touch_cmd(&mut c, 1).await.unwrap());
+            assert_eq!(touch_cmd(&mut c, 1).await.unwrap(), TouchResult::Touched);
 
             let mut c = Cursor::new(b"touch 1\r\nNOT_FOUND\r\n".to_vec());
-            assert!(!touch_cmd(&mut c, 1).await.unwrap());
+            assert_eq!(touch_cmd(&mut c, 1).await.unwrap(), TouchResult::NotFound);
 
             let mut c = Cursor::new(b"touch 1\r\nERROR\r\n".to_vec());
             assert!(touch_cmd(&mut c, 1).await.is_err());
@@ -1665,10 +1713,10 @@ mod tests {
     fn test_bury() {
         block_on(async {
             let mut c = Cursor::new(b"bury 1 0\r\nBURIED\r\n".to_vec());
-            assert!(bury_cmd(&mut c, 1, 0).await.unwrap());
+            assert_eq!(bury_cmd(&mut c, 1, 0).await.unwrap(), BuryResult::Buried);
 
             let mut c = Cursor::new(b"bury 1 0\r\nNOT_FOUND\r\n".to_vec());
-            assert!(!bury_cmd(&mut c, 1, 0).await.unwrap());
+            assert_eq!(bury_cmd(&mut c, 1, 0).await.unwrap(), BuryResult::NotFound);
 
             let mut c = Cursor::new(b"bury 1 0\r\nERROR\r\n".to_vec());
             assert!(bury_cmd(&mut c, 1, 0).await.is_err());
@@ -1711,10 +1759,10 @@ mod tests {
     fn test_delete() {
         block_on(async {
             let mut c = Cursor::new(b"delete 1\r\nDELETED\r\n".to_vec());
-            assert!(delete_cmd(&mut c, 1).await.unwrap());
+            assert_eq!(delete_cmd(&mut c, 1).await.unwrap(), DeleteResult::Deleted);
 
             let mut c = Cursor::new(b"delete 1\r\nNOT_FOUND\r\n".to_vec());
-            assert!(!delete_cmd(&mut c, 1).await.unwrap());
+            assert_eq!(delete_cmd(&mut c, 1).await.unwrap(), DeleteResult::NotFound);
 
             let mut c = Cursor::new(b"delete 1\r\nERROR\r\n".to_vec());
             assert!(delete_cmd(&mut c, 1).await.is_err());
