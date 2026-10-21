@@ -10,9 +10,9 @@ keywords = ["beanstalkd", "queue", "consumer", "producer", "worker"]
 categories = ["network-programming", "asynchronous"]
 
 [dependencies]
-thiserror = "2.0.18"
+thiserror = "2.0.21"
 smol = { version = "2.0.2", optional = true }
-tokio = { version = "1.52.3", optional = true }
+tokio = { version = "1.54.0", optional = true }
 
 [features]
 default = ["smol-comp"]
