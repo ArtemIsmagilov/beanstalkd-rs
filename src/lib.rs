@@ -1770,10 +1770,15 @@ mod tests {
             assert!(reserve_job_cmd(&mut c, 1).await.unwrap().is_none());
 
             let mut c = Cursor::new(b"reserve-job 1\r\nERROR\r\n".to_vec());
-            assert!(reserve_job_cmd(&mut c, 1).await.is_err());
+            assert!(
+                matches!(reserve_job_cmd(&mut c, 1).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"reserve-job 1\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(reserve_job_cmd(&mut c, 1).await.is_err());
+            assert!(matches!(
+                reserve_job_cmd(&mut c, 1).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1802,10 +1807,15 @@ mod tests {
             );
 
             let mut c = Cursor::new(b"reserve-with-timeout 1\r\nERROR\r\n".to_vec());
-            assert!(reserve_with_timeout_cmd(&mut c, 1).await.is_err());
+            assert!(
+                matches!(reserve_with_timeout_cmd(&mut c, 1).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"reserve-with-timeout 1\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(reserve_with_timeout_cmd(&mut c, 1).await.is_err());
+            assert!(matches!(
+                reserve_with_timeout_cmd(&mut c, 1).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1831,10 +1841,12 @@ mod tests {
             assert_eq!(reserve_cmd(&mut c).await.unwrap(), ReserveResult::TimedOut);
 
             let mut c = Cursor::new(b"reserve\r\nERROR\r\n".to_vec());
-            assert!(reserve_cmd(&mut c).await.is_err());
+            assert!(
+                matches!(reserve_cmd(&mut c).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"reserve\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(reserve_cmd(&mut c).await.is_err());
+            assert!(matches!(reserve_cmd(&mut c).await, Err(Error::BadFormat)));
         })
     }
 
