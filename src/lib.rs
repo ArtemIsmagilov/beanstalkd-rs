@@ -1386,10 +1386,15 @@ mod tests {
             );
 
             let mut c = Cursor::new(b"pause-tube default 5\r\nERROR\r\n".to_vec());
-            assert!(pause_tube_cmd(&mut c, "default", 5).await.is_err());
+            assert!(
+                matches!(pause_tube_cmd(&mut c, "default", 5).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"pause-tube default 5\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(pause_tube_cmd(&mut c, "default", 5).await.is_err());
+            assert!(matches!(
+                pause_tube_cmd(&mut c, "default", 5).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1404,10 +1409,15 @@ mod tests {
             );
 
             let mut c = Cursor::new(b"list-tubes-watched\r\nERROR\r\n".to_vec());
-            assert!(list_tubes_watched_cmd(&mut c).await.is_err());
+            assert!(
+                matches!(list_tubes_watched_cmd(&mut c).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"list-tubes-watched\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(list_tubes_watched_cmd(&mut c).await.is_err());
+            assert!(matches!(
+                list_tubes_watched_cmd(&mut c).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1418,10 +1428,15 @@ mod tests {
             assert_eq!(list_tube_used_cmd(&mut c).await.unwrap(), "default");
 
             let mut c = Cursor::new(b"list-tube-used\r\nERROR\r\n".to_vec());
-            assert!(list_tube_used_cmd(&mut c).await.is_err());
+            assert!(
+                matches!(list_tube_used_cmd(&mut c).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"list-tube-used\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(list_tube_used_cmd(&mut c).await.is_err());
+            assert!(matches!(
+                list_tube_used_cmd(&mut c).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1432,10 +1447,15 @@ mod tests {
             assert_eq!(list_tubes_cmd(&mut c).await.unwrap(), vec!["default", "a"]);
 
             let mut c = Cursor::new(b"list-tubes\r\nERROR\r\n".to_vec());
-            assert!(list_tubes_cmd(&mut c).await.is_err());
+            assert!(
+                matches!(list_tubes_cmd(&mut c).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"list-tubes\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(list_tubes_cmd(&mut c).await.is_err());
+            assert!(matches!(
+                list_tubes_cmd(&mut c).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1453,10 +1473,12 @@ mod tests {
             );
 
             let mut c = Cursor::new(b"stats\r\nERROR\r\n".to_vec());
-            assert!(stats_cmd(&mut c).await.is_err());
+            assert!(
+                matches!(stats_cmd(&mut c).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"stats\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(stats_cmd(&mut c).await.is_err());
+            assert!(matches!(stats_cmd(&mut c).await, Err(Error::BadFormat)));
         })
     }
 
@@ -1476,10 +1498,15 @@ mod tests {
             );
 
             let mut c = Cursor::new(b"stats-tube default\r\nERROR\r\n".to_vec());
-            assert!(stats_tube_cmd(&mut c, "default").await.is_err());
+            assert!(
+                matches!(stats_tube_cmd(&mut c, "default").await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"stats-tube default\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(stats_tube_cmd(&mut c, "default").await.is_err());
+            assert!(matches!(
+                stats_tube_cmd(&mut c, "default").await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1501,10 +1528,15 @@ mod tests {
             assert!(stats_job_cmd(&mut c, 1).await.unwrap().is_none());
 
             let mut c = Cursor::new(b"stats-job 1\r\nERROR\r\n".to_vec());
-            assert!(stats_job_cmd(&mut c, 1).await.is_err());
+            assert!(
+                matches!(stats_job_cmd(&mut c, 1).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"stats-job 1\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(stats_job_cmd(&mut c, 1).await.is_err());
+            assert!(matches!(
+                stats_job_cmd(&mut c, 1).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1524,10 +1556,15 @@ mod tests {
             );
 
             let mut c = Cursor::new(b"kick-job 1\r\nERROR\r\n".to_vec());
-            assert!(kick_job_cmd(&mut c, 1).await.is_err());
+            assert!(
+                matches!(kick_job_cmd(&mut c, 1).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"kick-job 1\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(kick_job_cmd(&mut c, 1).await.is_err());
+            assert!(matches!(
+                kick_job_cmd(&mut c, 1).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1538,10 +1575,12 @@ mod tests {
             assert_eq!(kick_cmd(&mut c, 10).await.unwrap(), 0);
 
             let mut c = Cursor::new(b"kick 10\r\nERROR\r\n".to_vec());
-            assert!(kick_cmd(&mut c, 10).await.is_err());
+            assert!(
+                matches!(kick_cmd(&mut c, 10).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"kick 10\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(kick_cmd(&mut c, 10).await.is_err());
+            assert!(matches!(kick_cmd(&mut c, 10).await, Err(Error::BadFormat)));
         })
     }
 
@@ -1561,10 +1600,12 @@ mod tests {
             assert!(peek_cmd(&mut c, 1).await.unwrap().is_none());
 
             let mut c = Cursor::new(b"peek 1\r\nERROR\r\n".to_vec());
-            assert!(peek_cmd(&mut c, 1).await.is_err());
+            assert!(
+                matches!(peek_cmd(&mut c, 1).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"peek 1\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(peek_cmd(&mut c, 1).await.is_err());
+            assert!(matches!(peek_cmd(&mut c, 1).await, Err(Error::BadFormat)));
         })
     }
 
@@ -1584,10 +1625,15 @@ mod tests {
             assert!(peek_ready_cmd(&mut c).await.unwrap().is_none());
 
             let mut c = Cursor::new(b"peek-ready\r\nERROR\r\n".to_vec());
-            assert!(peek_ready_cmd(&mut c).await.is_err());
+            assert!(
+                matches!(peek_ready_cmd(&mut c).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"peek-ready\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(peek_ready_cmd(&mut c).await.is_err());
+            assert!(matches!(
+                peek_ready_cmd(&mut c).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1607,10 +1653,15 @@ mod tests {
             assert!(peek_delayed_cmd(&mut c).await.unwrap().is_none());
 
             let mut c = Cursor::new(b"peek-delayed\r\nERROR\r\n".to_vec());
-            assert!(peek_delayed_cmd(&mut c).await.is_err());
+            assert!(
+                matches!(peek_delayed_cmd(&mut c).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"peek-delayed\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(peek_delayed_cmd(&mut c).await.is_err());
+            assert!(matches!(
+                peek_delayed_cmd(&mut c).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1630,10 +1681,15 @@ mod tests {
             assert!(peek_buried_cmd(&mut c).await.unwrap().is_none());
 
             let mut c = Cursor::new(b"peek-buried\r\nERROR\r\n".to_vec());
-            assert!(peek_buried_cmd(&mut c).await.is_err());
+            assert!(
+                matches!(peek_buried_cmd(&mut c).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"peek-buried\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(peek_buried_cmd(&mut c).await.is_err());
+            assert!(matches!(
+                peek_buried_cmd(&mut c).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1653,10 +1709,15 @@ mod tests {
             );
 
             let mut c = Cursor::new(b"ignore default\r\nERROR\r\n".to_vec());
-            assert!(ignore_cmd(&mut c, "default").await.is_err());
+            assert!(
+                matches!(ignore_cmd(&mut c, "default").await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"ignore default\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(ignore_cmd(&mut c, "default").await.is_err());
+            assert!(matches!(
+                ignore_cmd(&mut c, "default").await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1667,10 +1728,15 @@ mod tests {
             assert_eq!(watch_cmd(&mut c, "default").await.unwrap(), 1);
 
             let mut c = Cursor::new(b"watch default\r\nERROR\r\n".to_vec());
-            assert!(watch_cmd(&mut c, "default").await.is_err());
+            assert!(
+                matches!(watch_cmd(&mut c, "default").await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"watch default\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(watch_cmd(&mut c, "default").await.is_err());
+            assert!(matches!(
+                watch_cmd(&mut c, "default").await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1684,10 +1750,12 @@ mod tests {
             assert_eq!(touch_cmd(&mut c, 1).await.unwrap(), TouchResult::NotFound);
 
             let mut c = Cursor::new(b"touch 1\r\nERROR\r\n".to_vec());
-            assert!(touch_cmd(&mut c, 1).await.is_err());
+            assert!(
+                matches!(touch_cmd(&mut c, 1).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"touch 1\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(touch_cmd(&mut c, 1).await.is_err());
+            assert!(matches!(touch_cmd(&mut c, 1).await, Err(Error::BadFormat)));
         })
     }
 
@@ -1701,10 +1769,15 @@ mod tests {
             assert_eq!(bury_cmd(&mut c, 1, 0).await.unwrap(), BuryResult::NotFound);
 
             let mut c = Cursor::new(b"bury 1 0\r\nERROR\r\n".to_vec());
-            assert!(bury_cmd(&mut c, 1, 0).await.is_err());
+            assert!(
+                matches!(bury_cmd(&mut c, 1, 0).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"bury 1 0\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(bury_cmd(&mut c, 1, 0).await.is_err());
+            assert!(matches!(
+                bury_cmd(&mut c, 1, 0).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1730,10 +1803,15 @@ mod tests {
             );
 
             let mut c = Cursor::new(b"release 1 0 0\r\nERROR\r\n".to_vec());
-            assert!(release_cmd(&mut c, 1, 0, 0).await.is_err());
+            assert!(
+                matches!(release_cmd(&mut c, 1, 0, 0).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"release 1 0 0\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(release_cmd(&mut c, 1, 0, 0).await.is_err());
+            assert!(matches!(
+                release_cmd(&mut c, 1, 0, 0).await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1747,10 +1825,12 @@ mod tests {
             assert_eq!(delete_cmd(&mut c, 1).await.unwrap(), DeleteResult::NotFound);
 
             let mut c = Cursor::new(b"delete 1\r\nERROR\r\n".to_vec());
-            assert!(delete_cmd(&mut c, 1).await.is_err());
+            assert!(
+                matches!(delete_cmd(&mut c, 1).await, Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n")
+            );
 
             let mut c = Cursor::new(b"delete 1\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(delete_cmd(&mut c, 1).await.is_err());
+            assert!(matches!(delete_cmd(&mut c, 1).await, Err(Error::BadFormat)));
         })
     }
 
