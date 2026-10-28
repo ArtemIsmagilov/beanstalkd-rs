@@ -1845,10 +1845,14 @@ mod tests {
             assert_eq!(use_tube_cmd(&mut c, "default").await.unwrap(), "default");
 
             let mut c = Cursor::new(b"use default\r\nERROR\r\n".to_vec());
-            assert!(use_tube_cmd(&mut c, "default").await.is_err());
+            assert!(matches!(use_tube_cmd(&mut c, "default").await,
+            Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n"));
 
             let mut c = Cursor::new(b"use default\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(use_tube_cmd(&mut c, "default").await.is_err());
+            assert!(matches!(
+                use_tube_cmd(&mut c, "default").await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 
@@ -1868,19 +1872,34 @@ mod tests {
             );
 
             let mut c = Cursor::new(b"put 0 0 0 1\r\na\r\nEXPECTED_CRLF\r\n".to_vec());
-            assert!(put_cmd(&mut c, 1, 0, 0, b"a").await.is_err());
+            assert!(matches!(
+                put_cmd(&mut c, 1, 0, 0, b"a").await,
+                Err(Error::ExpectedCrlf)
+            ));
 
             let mut c = Cursor::new(b"put 0 0 0 1\r\na\r\nJOB_TOO_BIG\r\n".to_vec());
-            assert!(put_cmd(&mut c, 1, 0, 0, b"a").await.is_err());
+            assert!(matches!(
+                put_cmd(&mut c, 1, 0, 0, b"a").await,
+                Err(Error::JobTooBig)
+            ));
 
             let mut c = Cursor::new(b"put 0 0 0 1\r\na\r\nDRAINING\r\n".to_vec());
-            assert!(put_cmd(&mut c, 1, 0, 0, b"a").await.is_err());
+            assert!(matches!(
+                put_cmd(&mut c, 1, 0, 0, b"a").await,
+                Err(Error::Draining)
+            ));
 
             let mut c = Cursor::new(b"put 0 0 0 1\r\na\r\nERROR\r\n".to_vec());
-            assert!(put_cmd(&mut c, 1, 0, 0, b"a").await.is_err());
+            assert!(matches!(
+                put_cmd(&mut c, 1, 0, 0, b"a").await,
+                Err(Error::UnexpectedResponse(s)) if s == "ERROR\r\n"
+            ));
 
-            let mut c = Cursor::new(b"put 0 0 0\r\na\r\nBAD_FORMAT\r\n".to_vec());
-            assert!(put_cmd(&mut c, 1, 0, 0, b"a").await.is_err());
+            let mut c = Cursor::new(b"put 0 0 0 1\r\na\r\nBAD_FORMAT\r\n".to_vec());
+            assert!(matches!(
+                put_cmd(&mut c, 1, 0, 0, b"a").await,
+                Err(Error::BadFormat)
+            ));
         })
     }
 }
